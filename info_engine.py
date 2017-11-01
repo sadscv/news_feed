@@ -28,6 +28,11 @@ websites = get_websites()
 
 @celery_app.task
 def extract(w_id):
+    """
+
+    :param w_id:
+    :return:
+    """
     try:
         w = get_website(w_id)
         # log(NOTICE, "开始 #{id} {name} {site} ".format(id=w.id, name=w.company.name_cn, site=w.url))
