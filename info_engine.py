@@ -20,20 +20,20 @@ from bs4 import BeautifulSoup
 from celery import Celery
 
 
-celery_app = Celery('info_engine', broker=CELERY_BROKER, backend=CELERY_BACKEND)
+celery_app = Celery('info_engine', broker=CELERY_BROKER, backend=CELERY_BACKEND) #分布式任务队列
 celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
 websites = get_websites()
 # websites = get_websites_desc()
 
 @celery_app.task
-def extract(w_id):
+def extract(w_id): #任务函数
     try:
-        w = get_website(w_id)
+        w = get_website(w_id)#获取website中指定id的数据
         # log(NOTICE, "开始 #{id} {name} {site} ".format(id=w.id, name=w.company.name_cn, site=w.url))
 
         new_html_content = crawl(w.url)
-        if not new_html_content:
+        if not new_html_content:    #log()显示信息
             log(NOTICE, "#{id} {name} {site} 抓到更新 0 条".format(id=w.company.id, name=w.company.name_cn, site=w.url))
             return
 
@@ -43,7 +43,7 @@ def extract(w_id):
             save_html_content(w.id, new_html_content)
             log(NOTICE, "#{id} {name} {site} 抓到更新 0 条".format(id=w.company.id, name=w.company.name_cn, site=w.url))
             return
-
+        #difflib.ndiff()按行进行比较，然后输出一个差别报告
         diff_text = diff_file(old_html_content, new_html_content)
         if not diff_text:
             log(NOTICE, "#{id} {name} {site} 抓到更新 0 条".format(id=w.company.id, name=w.company.name_cn, site=w.url))

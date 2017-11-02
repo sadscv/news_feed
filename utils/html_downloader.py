@@ -14,7 +14,7 @@ def save_html(content):
         f.write(content)
 
 
-def crawl(url):
+def crawl(url): #以utf-8格式返回响网页应内容
     s = requests.session()
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
@@ -23,7 +23,7 @@ def crawl(url):
     if response.status_code == 200:
         text = response.text
         encoding = response.encoding
-        apparent_encoding = response.apparent_encoding
+        apparent_encoding = response.apparent_encoding   #使用apparent_encoding可以获得真实编码
 
         if encoding not in ['utf-8', 'UTF-8']:
             try:

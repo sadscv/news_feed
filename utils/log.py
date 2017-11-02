@@ -11,7 +11,7 @@ from db_access import log2db
 NOTICE, RECORD, WARNING, ERROR, FATALITY, PUSH = 0, 1, 2, 4, 8, 16
 
 
-def log(level, output, func_name=''):
+def log(level, output, func_name=''):  #显示提示信息
     t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     if level == NOTICE:

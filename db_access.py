@@ -41,7 +41,7 @@ def create_user(**kwargs):
         return res
 
 
-def authenticate(email=None, password=None):
+def authenticate(email=None, password=None):#在User中查看验证用户与密码，并返回提示信息
     res = {"success": False, "msg": "", "user_id": None}
     user = session.query(User).filter_by(email=email).first()
     if not user:
@@ -56,48 +56,49 @@ def authenticate(email=None, password=None):
     return res
 
 
-def get_user(u_id=None):
+def get_user(u_id=None): #获取User中给定ｉｄ的数据
     user = session.query(User).filter_by(id=u_id).first()
     return user
 
 
-def get_companies():
+def get_companies():  #获取Company表的数据
     companies = session.query(Company).all()
     # companies = session.query(Company).order_by(desc(Company.create_at)).all()
     return companies
 
 
-def get_company(c_id=None):
+def get_company(c_id=None): #获取Company中给定ｉｄ的数据
     company = session.query(Company).filter_by(id=c_id).first()
     return company
 
 
-def search_company(text):
+def search_company(text):  #获取Company中文名name_cn包含给定text的数据
     company_list = session.query(Company).filter(Company.name_cn.contains(text)).all()
     return company_list
 
 
-def get_profile(c_id=None):
+def get_profile(c_id=None):#获取CompanyProfle中给定ｉｄ的数据
     profile = session.query(CompanyProfle).filter_by(company_id=c_id).first()
     return profile
 
 
-def get_contact(c_id=None):
+def get_contact(c_id=None):#获取ContactPerson中给定ｉｄ的数据
     contact = session.query(ContactPerson).filter_by(company_id=c_id).all()
     return contact
 
 
-def get_websites():
+def get_websites():  #获取数据库websitr数据
     websites = session.query(Website).all()
     return websites
 
 
-def get_websites_desc():
+def get_websites_desc():   #获取Website列表的，按create_at降序排列
     websites = session.query(Website).order_by(desc(Website.create_at)).all()
     return websites
 
 
-def get_website(w_id):
+def get_website(w_id):#获取Website中指定id的数据
+    # noinspection PyPackageRequirements
     website = session.query(Website).filter_by(id=w_id).first()
     return website
 
@@ -107,16 +108,16 @@ def get_company_websites(c_id):
     return websites
 
 
-def get_users():
+def get_users():#获取数据库User数据
     users = session.query(User).all()
     return users
 
 
 def get_logs(mins):
-    since = datetime.datetime.now() - datetime.timedelta(minutes=mins)
+    since = datetime.datetime.now() - datetime.timedelta(minutes=mins)# 当前时间减去mins分钟
     logs = session.query(CrawlerLOG).filter(CrawlerLOG.create_at > since).order_by(desc(CrawlerLOG.create_at)).all()
 
-    flag = datetime.datetime.now() - datetime.timedelta(days=1)
+    flag = datetime.datetime.now() - datetime.timedelta(days=1)# 当前时间的前一天
     old_logs = session.query(CrawlerLOG).filter(CrawlerLOG.create_at <= flag).all()
     for log_item in old_logs:
         session.delete(log_item)
@@ -124,7 +125,7 @@ def get_logs(mins):
     return logs
 
 
-def delete_company(company_id):
+def delete_company(company_id):#删除Website和Company中指定company_id的数据
     try:
         websites = session.query(Website).filter_by(company_id=company_id).all()
         for w in websites:
@@ -141,7 +142,7 @@ def delete_company(company_id):
         return False
 
 
-def delete_website(website_id):
+def delete_website(website_id):#删除Website中指定id的数据
     try:
         website = session.query(Website).filter_by(id=website_id).first()
         session.delete(website)
@@ -154,7 +155,7 @@ def delete_website(website_id):
         return False
 
 
-def delete_user(user_id):
+def delete_user(user_id):#删除User中指定id的数据
     try:
         user = session.query(User).filter_by(id=user_id).first()
         session.delete(user)
@@ -167,7 +168,7 @@ def delete_user(user_id):
         return False
 
 
-def save_html_content(w_id, content):
+def save_html_content(w_id, content):#保存HtmlContent中制定website_id的内容和时间，如果HtmlContent中么有则添加
     try:
         html = session.query(HtmlContent).filter_by(website_id=w_id).first()
         if html:
@@ -186,7 +187,7 @@ def save_html_content(w_id, content):
         return False
 
 
-def save_info_feed(url, text, w_id, c_id):
+def save_info_feed(url, text, w_id, c_id):#InfoFeed中添加指定ｔｅｘｔ的数据
     try:
         feed = session.query(InfoFeed).filter_by(text=text).first()
         if feed:
