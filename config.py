@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time    : 17-11-5 下午11:38
+# @Author  : sadscv
+# @File    : config.py
 # --*-- coding: utf-8 --*--
 
 
@@ -8,6 +13,8 @@ DB = {
     'DB_NAME': 'news_feed',
     # 'USER': '',
     # 'PASSWORD' : ''
+    'USER': 'root',
+    'PASSWORD': 'sadsad'
 }
 
 
