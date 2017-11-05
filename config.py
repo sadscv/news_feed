@@ -8,8 +8,6 @@ DB = {
     'DB_NAME': 'news_feed',
     # 'USER': '',
     # 'PASSWORD' : ''
-    'USER': 'root',
-    'PASSWORD' : 'sadsad'
 }
 
 
