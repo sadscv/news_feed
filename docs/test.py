@@ -1,3 +1,5 @@
+# --*-- coding: utf-8 --*--
+
 with open('data.txt') as f:
     data = f.readlines()
     for s in data:
