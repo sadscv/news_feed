@@ -1,6 +1,7 @@
 # --*-- coding: utf-8 --*--
 import time
 
+
 from utils.gen_email_msg import gen_message
 
 __author__ = 'nolan'
