@@ -1,18 +1,18 @@
-#公告栏
+# 公告栏
 
 ## 学习资料
 
-### git 
+### Git 
 [官方文档](https://git-scm.com/book/zh/v2)  强烈推荐  
 
-###此外
+### 此外
 [廖雪峰的Git教程](https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000)
 
 
 
 (To be update)
 
-
+---
 
 
 # 项目介绍
