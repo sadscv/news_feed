@@ -12,7 +12,7 @@ from config import ITEMS_NUM_PERPAGE, TIME_LIMIT
 
 from db_access import *
 
-define("port", default=8888, help="run on the given port", type=int)
+define("port", default=8008, help="run on the given port", type=int)
 define("debug", default=True, type=bool)
 
 
