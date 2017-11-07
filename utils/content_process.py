@@ -7,10 +7,20 @@ from urllib.parse import urlparse
 from utils.blacklist import blacklist_url, blacklist_text
 
 
-def complement_url(url, site):  #组合完整的url地址
+def complement_url(url, site):
+    """
+    通过匹配给定的url以及当前site,对某些奇怪的url做一些拼接处理,使得其能符合正常规则
+    e.g.
+    url : ./foo.html/bar?id=1&result=0
+    site : https://www.demo.com/
+    complement_url: https://www.demo.com/foo.html/bar?id=1&result=0
+
+    :param url: <string>
+    :param site: <string>
+    :return: <string>
+    """
     if not url.startswith("http"):
-        #使用urlparse模块可以对url进行分析，最主要的操作就是拆分和合并url的各个部件
-        base_url = urlparse(site).scheme + "://" + urlparse(site).netloc  #parsed.scheme 网络协议 ,parsed.netloc服务器位置,也可能有用户信息
+        base_url = urlparse(site).scheme + "://" + urlparse(site).netloc
         if url.startswith("./"):
             new_url = site.rstrip('/') + url[1:]
             return new_url
@@ -41,7 +51,16 @@ def complement_url(url, site):  #组合完整的url地址
 
 
 
-def check_content(url, text):  #将url,text和黑名单对比
+def check_content(url, text):
+    """
+    check if given 'url' is exactly match url regulation and 'text' similar to news title.
+    如 <a href="url">标签中 url是否为规范地址。
+    <a>text</a> 中的text是否是长度合规的字符串。
+
+    :param url:<string>
+    :param text: <string>
+    :return: <Boolean>
+    """
     if (not url) or (not text):
         return False
 
