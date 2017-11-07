@@ -1,3 +1,5 @@
+# --*-- coding: utf-8 --*--
+
 import os
 import sys
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),".."))
@@ -11,7 +13,8 @@ from sqlalchemy import func
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 
-engine = create_engine('mysql+mysqldb://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DB_NAME}?charset=utf8'.format(
+engine = create_engine('mysql+pymysql://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DB_NAME}?charset=utf8'.format(
+# engine = create_engine('mysql+mysqldb://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DB_NAME}?charset=utf8'.format(
     USERNAME=DB['USER'],
     PASSWORD=DB['PASSWORD'],
     HOST=DB['HOST'],
