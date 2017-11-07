@@ -74,7 +74,7 @@
 ## 3.8 前台展示
 
     前台设计参照下图
-　　![image](/pictures/qiantai.png)
+　　![image](./pictures/qiantai.png)
 
 
 # 4 项目进度规划
