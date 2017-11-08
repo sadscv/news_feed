@@ -34,7 +34,7 @@ def extract(w_id):
     """
     try:
     # 列举出所有没能成功抓取更新的情况，并在log中记录。
-
+    
         w = get_website(w_id)
         # log(NOTICE, "开始 #{id} {name} {site} ".format(id=w.id, name=w.company.name_cn, site=w.url))
         new_html_content = crawl(w.url)
