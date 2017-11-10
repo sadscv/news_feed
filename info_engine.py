@@ -24,7 +24,7 @@ celery_app = Celery('info_engine', broker=CELERY_BROKER, backend=CELERY_BACKEND)
 celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
 
-# decorator, making 'extract' func become a task of celery.
+# decorator, register 'extract' func as an Celery task
 @celery_app.task
 def extract(w_id):
     """
@@ -34,9 +34,10 @@ def extract(w_id):
     """
     try:
     # 列举出所有没能成功抓取更新的情况，并在log中记录。
-    
+
         w = get_website(w_id)
         # log(NOTICE, "开始 #{id} {name} {site} ".format(id=w.id, name=w.company.name_cn, site=w.url))
+        # Todo 此处尝试调用Scrapy
         new_html_content = crawl(w.url)
         if not new_html_content:
             log(NOTICE, "#{id} {name} {site} 抓到更新 0 条".format(id=w.company.id, name=w.company.name_cn, site=w.url))
@@ -103,6 +104,8 @@ def gen_info():
     # w : {url, company:{name_cn}, id}
     for w in websites[:]:
         if (w.url not in blacklist_site) and (w.company.name_cn not in blacklist_company):
+            # 为什么要传w.id而非直接传递w对象？
+            # 因为要把w通过Celery传递给extract，而celery不能接收非Json化的对象，于是此处只能传递id，extract执行时再从数据库查找w
             extract.delay(w.id)
 
 

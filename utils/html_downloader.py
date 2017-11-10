@@ -15,6 +15,12 @@ def save_html(content):
 
 
 def crawl(url):
+    """
+    crawl given url's page.
+
+    :param url:<str>
+    :return:<str|False>
+    """
     s = requests.session()
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
@@ -47,6 +53,11 @@ def crawl(url):
         # save_html(text)
         return text
     return False
+
+
+def scrapy_crawl(url):
+    pass
+
 
 
 

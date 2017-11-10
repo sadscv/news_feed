@@ -1,6 +1,6 @@
 # 公告栏
 
-## 学习资料-Git 
+### 学习资料-Git 
 
 [官方文档](https://git-scm.com/book/zh/v2)  强烈推荐  
 
@@ -11,20 +11,15 @@
 
 (To be update)
 
-## 注意事项
-### 在服务器上使用
-1. 切换用户
-& su test
-(username:test password:test)
+---
+### 注意事项
 
+### 在服务器上使用
+1. 切换用户 & su test (username:test password:test)
 2. 进入目录 & cd /home/test/Repositories/news_feed
 3. 切换conda环境 & source activate crawl
-4. 配置文件config.py出于安全考虑未加入版本控制，若需更改请SSH至服务器手动编辑。
-5. mysql连接密码参见配置文件，请勿滥用，如需修改数据库结构请咨询 @sadscv
-
-
-
----
+* 配置文件 config.py 出于安全考虑未加入版本控制，若需更改请SSH至服务器手动编辑。
+* mysql 连接密码参见配置文件，请勿滥用，如需修改数据库结构请咨询 @sadscv
 
 
 # 项目介绍
