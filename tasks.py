@@ -18,28 +18,6 @@ app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
 logger = get_task_logger(__name__)
 
-
-# process = CrawlerProcess(get_project_settings())
-#
-# process.crawl('netease_news_spider', domain='news.163.com')
-# process.start()
-
-
-
-# class UrlCrawlerScript(Process):
-#     def __init__(self, spider):
-#         # Process.__init__(self)
-#         # settings = get_project_settings()
-#         self.crawler = CrawlerProcess(get_project_settings())
-#         # self.crawler.configure()
-#         # self.crawler.signals.connect(reactor.stop, signal=signals.spider_closed)
-#         self.spider = spider
-#
-#     def run(self):
-#         self.crawler.crawl(self.spider)
-#         self.crawler.start()
-#         # reactor.run()
-
 def run_spider():
     spider = NeteaseNewsSpider()
     settings = Settings(
