@@ -9,7 +9,7 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),".."))
 sys.path.append(BASE_DIR)
 
 import time
-from CONFIG import CELERY_BROKER, CELERY_BACKEND, CRAWL_INTERVAL
+# from CONFIG.config import CELERY_BROKER, CELERY_BACKEND, CRAWL_INTERVAL
 from db_access import *
 from utils.blacklist import blacklist_site, blacklist_company
 from utils.content_process import complement_url, check_content
@@ -19,7 +19,8 @@ from bs4 import BeautifulSoup
 from celery import Celery
 
 
-celery_app = Celery('info_engine', broker=CELERY_BROKER, backend=CELERY_BACKEND)
+celery_app = Celery('info_engine')
+celery_app.config_from_object('CONFIG.celeryconfig')
 celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
 

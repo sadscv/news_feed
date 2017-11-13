@@ -11,8 +11,8 @@
 
 BOT_NAME = 'news_spider'
 
-SPIDER_MODULES = ['news_spider.spiders']
-NEWSPIDER_MODULE = 'news_spider.spiders'
+SPIDER_MODULES = ['crawls.news_spider.spiders']
+NEWSPIDER_MODULE = 'crawls.news_spider.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
@@ -52,10 +52,21 @@ COOKIES_ENABLED = False
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
+
+'''
+因为使用网上抓取的免费代理,会出现多种异常如代理返回广告,返回错误代码,错误链接,重定向等,
+故需使用自定义 HttpProxyMiddleware 处理各种异常情况.详情请参见:
+https://github.com/kohn/HttpProxyMiddleware
+http://www.kohn.com.cn/wordpress/?p=208
+'''
+
 DOWNLOADER_MIDDLEWARES = {
-    'news_spider.middlewares.MyCustomDownloaderMiddleware': 543,
+    'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware': 350,
+    'scrapy.contrib.downloadermiddleware.retry.RetryMiddleware': 351,
+    'crawls.news_spider.HttpProxyMiddleware.HttpProxyMiddleware': 666,
 }
 
+DOWNLOAD_TIMEOUT = 10
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html
 #EXTENSIONS = {
@@ -64,9 +75,10 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {
-   'news_spider.pipelines.NewsSpiderPipeline': 300,
-}
+Todo = 'to be update'
+# ITEM_PIPELINES = {
+#    'news_spider.pipelines.NewsSpiderPipeline': 300,
+# }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
