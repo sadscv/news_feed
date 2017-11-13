@@ -9,7 +9,7 @@ sys.path.append(BASE_DIR)
 
 import time
 from utils.send_email import send_mail
-from config import SEND_MAIL_INTERVAL
+from CONFIG import SEND_MAIL_INTERVAL
 from db_access import get_users
 from utils.blacklist import blacklist_email
 

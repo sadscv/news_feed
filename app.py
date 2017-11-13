@@ -1,15 +1,13 @@
 # --*-- coding: utf-8 --*--
 
-import os
-import tornado.ioloop
-import tornado.web
-import tornado.locale
 import tornado.escape
+import tornado.ioloop
+import tornado.locale
+import tornado.web
 from tornado.options import define, options
 
 import uimodules
-from config import ITEMS_NUM_PERPAGE, TIME_LIMIT
-
+from CONFIG import ITEMS_NUM_PERPAGE, TIME_LIMIT
 from db_access import *
 
 define("port", default=8008, help="run on the given port", type=int)

@@ -2,8 +2,10 @@
 
 import datetime
 import hashlib
+
 from sqlalchemy import desc
-from config import MD5_SALT
+
+from CONFIG import MD5_SALT
 from models import *
 from utils.blacklist import blacklist_title_text
 

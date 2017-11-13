@@ -1,16 +1,22 @@
 # 公告栏
 
-### 学习资料-Git 
+### 学习资料
+
+###### Git 
 
 [官方文档](https://git-scm.com/book/zh/v2)  强烈推荐  
 
  此外
 [廖雪峰的Git教程](https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000)
 
-书籍推荐：
-Python爬虫开发与项目实战 [pdf下载 密码:7fyj](https://pan.baidu.com/s/1hrLr7yk)
+###### 书籍推荐
 
-[实体书购买地址](https://item.jd.com/12206762.html#none)
+Python爬虫开发与项目实战 [pdf下载 ](https://pan.baidu.com/s/1hrLr7yk)密码:7fyj
+
+[实体书购买](https://item.jd.com/12206762.html#none)
+
+###### 代理IP
+https://www.nyloner.cn/proxy
 
 (To be update)
 

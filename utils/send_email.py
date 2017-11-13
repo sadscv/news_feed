@@ -15,7 +15,7 @@ from email.header import Header
 from email.mime.text import MIMEText
 from email.utils import parseaddr, formataddr
 import smtplib
-from config import EMAIL
+from CONFIG import EMAIL
 from db_access import get_users
 from utils.blacklist import blacklist_email
 
