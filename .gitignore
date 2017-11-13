@@ -1,3 +1,7 @@
 # Created by .ignore support plugin (hsz.mobi)
-/config.py
 /.idea
+/CONFIG/config.py
+/README.md.backup
+/crawls/ProxyPool/temp.png
+/crawls/ProxyPool/crawl_log
+/crawls/ProxyPool/verify_log
