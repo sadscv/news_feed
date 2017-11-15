@@ -1,5 +1,7 @@
 import threading
 import time
+
+import logging
 import pymysql
 import requests
 from celery import Celery
@@ -16,22 +18,27 @@ from crawls.ProxyPool.proxy_spiders.spider_xicidaili import SpiderXicidaili
 from CONFIG.config import DB
 
 # all class of crawler
+
 celery_app = Celery('crawls.ProxyPool.proxypool')
 celery_app.config_from_object('CONFIG.celeryconfig')
 celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
-CRAWLERS = [SpiderMimvp, SpiderCoderBusy, SpiderIP66, SpiderIP89,
-            SpiderKxdaili, SpiderData5u, SpiderIP181,
-            SpiderXicidaili]
-
+logger = logging.getLogger(__name__)
+# CRAWLERS = [SpiderMimvp, SpiderCoderBusy, SpiderIP66, SpiderIP89,
+#             SpiderKxdaili, SpiderData5u, SpiderIP181,
+#             SpiderXicidaili]
+# Todo 恢复crawlers
+CRAWLERS = [SpiderIP66, SpiderIP181]
 
 class IsEnable(threading.Thread):
-    def __init__(self, ip):
+    def __init__(self, ip, debug=False, logger=None):
         super(IsEnable, self).__init__()
         self.ip = ip
+        self.debug = debug
         self.proxies = {
             'http': 'http://%s' % ip
         }
+
 
     def run(self):
         try:
@@ -50,10 +57,16 @@ class IsEnable(threading.Thread):
         global cursor
         global conn
         global CRAWL_IP_COUNT
+        # if self.debug:
+        #     print('[IsEnable][Debug][valid ip:%s]', self.ip)
+        # else:
         try:
             date = time.strftime('%Y-%m-%d %X', time.localtime())
-            cursor.execute("insert into proxypool(ip,port,time) values" + str(
+            print("insert into proxypool(ip,port,time) values" + str(
                 (self.ip.split(':')[0], self.ip.split(':')[1], date)))
+            cursor.execute("insert into proxypool(ip,port,time) values " + str(
+                (self.ip.split(':')[0], self.ip.split(':')[1], date)))
+            print('execute')
             conn.commit()
             CRAWL_IP_COUNT += 1
         except:
@@ -67,6 +80,8 @@ def get_current_time():
 @celery_app.task
 def update_proxy():
     global CRAWL_IP_COUNT
+    global cursor
+
     CRAWL_IP_COUNT = 0
     conn = pymysql.connect(host=DB['HOST'],
                         user=DB['USER'],
@@ -99,7 +114,7 @@ def update_proxy():
                 print('[Spider][ProxyPool][Testing ip:[%s]'%ip)
             except:
                 break
-            work = IsEnable(ip)
+            work = IsEnable(ip=ip, debug=False)
             work.setDaemon(True)
             work.start()
             num += 1
@@ -119,4 +134,5 @@ if __name__ == '__main__':
     CRAWL_IP_COUNT = 0
     lock = threading.Lock()
 
-    update_proxy.delay()
+    # update_proxy.delay()
+    update_proxy()

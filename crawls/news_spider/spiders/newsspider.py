@@ -5,7 +5,7 @@
 @date:   2017-08-23
 """
 
-from ..items import NewsItem
+from crawls.news_spider.items import NewsItem
 
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor

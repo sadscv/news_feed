@@ -13,6 +13,7 @@ from twisted.web._newclient import ResponseNeverReceived
 from twisted.internet.error import TimeoutError, ConnectionRefusedError, ConnectError
 
 from CONFIG.config import DB
+from crawls.ProxyPool.proxypool import IsEnable
 from crawls.news_spider import fetch_free_proxyes
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ class HttpProxyMiddleware(object):
         # 初始化代理列表
         self.proxyes = [{"proxy": None, "valid": True, "count": 0}]
         # 初始时使用0号代理(即无代理)
-        self.proxy_index = 0
+        self.proxy_index = 5
         # 表示可信代理的数量(如自己搭建的HTTP代理)+1(不用代理直接连接)
         self.fixed_proxy = len(self.proxyes)
         # 上一次抓新代理的时间
@@ -106,6 +107,7 @@ class HttpProxyMiddleware(object):
         return False
 
     def reset_proxyes(self):
+        print('reset_proxyes')
         """
         将所有count>=指定阈值的代理重置为valid,
         """
@@ -135,6 +137,7 @@ class HttpProxyMiddleware(object):
             self.extend_proxy_threshold -= 1
 
     def len_valid_proxy(self):
+        print('len_valid_proxy')
         """
         返回proxy列表中有效的代理数量
         """
@@ -150,6 +153,7 @@ class HttpProxyMiddleware(object):
         如果发现代理列表只有fixed_proxy项有效, 重置代理列表
         如果还发现已经距离上次抓代理过了指定时间, 则抓取新的代理
         """
+        print('inc_proxy_index')
         assert self.proxyes[0]["valid"]
         if current != -1 and self.proxy_index != current:
             return
@@ -185,6 +189,7 @@ class HttpProxyMiddleware(object):
         """
         将request设置使用为当前的或下一个有效代理
         """
+        print('set_proxy')
         proxy = self.proxyes[self.proxy_index]
         if not proxy["valid"]:
             self.inc_proxy_index()
@@ -194,15 +199,16 @@ class HttpProxyMiddleware(object):
             self.last_no_proxy_time = datetime.now()
 
         if proxy["proxy"]:
-
             request.meta["proxy"] = proxy["proxy"]
         elif "proxy" in request.meta.keys():
             del request.meta["proxy"]
-        print('#' * 30, proxy["proxy"])
+        # IsEnable(ip=)
+        print('#######', 'proxy:%s, index:%s'% (proxy["proxy"], self.proxy_index))
         request.meta["proxy_index"] = self.proxy_index
         proxy["count"] += 1
 
     def invalid_proxy(self, index):
+        print('invalid_proxy')
         """
         将index指向的proxy设置为invalid,
         并调整当前proxy_index到下一个有效代理的位置
@@ -222,6 +228,7 @@ class HttpProxyMiddleware(object):
                 self.dump_valid_proxy()
 
     def dump_valid_proxy(self):
+        print('dump_valid_proxy')
         """
         保存代理列表中有效的代理到文件
         """
@@ -252,13 +259,11 @@ class HttpProxyMiddleware(object):
         request.meta["dont_redirect"] = True  # 有些代理会把请求重定向到一个莫名其妙的地址
 
         # spider发现parse error, 要求更换代理
-        print('require change proxy 2')
         if "change_proxy" in request.meta.keys() and request.meta["change_proxy"]:
-            print('require change proxy 1')
+            print('require change proxy:%s'%request.meta['proxy_index'])
             logger.info("change proxy request get by spider: %s" % request)
             self.invalid_proxy(request.meta["proxy_index"])
             request.meta["change_proxy"] = False
-        print('require change proxy 3')
         self.set_proxy(request)
 
     def process_response(self, request, response, spider):
@@ -266,9 +271,9 @@ class HttpProxyMiddleware(object):
         检查response.status, 根据status是否在允许的状态码中决定是否切换到下一个proxy, 或者禁用proxy
         """
         if "proxy" in request.meta.keys():
-            logger.debug("%s %s %s" % (request.meta["proxy"], response.status, request.url))
+            logger.debug("proxy:%s %s %s" % (request.meta["proxy"], response.status, request.url))
         else:
-            logger.debug("None %s %s" % (response.status, request.url))
+            logger.debug("proxy:None %s %s" % (response.status, request.url))
 
         # status不是正常的200而且不在spider声明的正常爬取过程中可能出现的
         # status列表中, 则认为代理无效, 切换代理

@@ -10,6 +10,7 @@ import logging
 
 from scrapy.settings import Settings
 from scrapy.utils.project import get_project_settings
+from scrapy.utils.response import open_in_browser
 
 logger = logging.getLogger("test spider")
 
@@ -17,7 +18,8 @@ celery_app = Celery('crawls.news_spider.spiders.test')
 celery_app.config_from_object('CONFIG.celeryconfig')
 celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
-
+global COUNT
+COUNT = 0
 class TestSpider(scrapy.Spider):
     name = "test"
 
@@ -30,13 +32,22 @@ class TestSpider(scrapy.Spider):
     )
 
     def parse(self, response):
-        # from scrapy.shell import inspect_response
-        # inspect_response(response, self)
+        from scrapy.shell import inspect_response
+        global COUNT
+        COUNT += 1
+        if response.body:
+            req = Request(response.url, self.parse, dont_filter=True)
+            req.meta["change_proxy"] = True
+            req.meta["proxy_index"] = 0
+            print('crawl success')
+            if req.meta['proxy_index'] != 0:
+                inspect_response(response, self)
+            yield req
+            # yield response.request
+        else:
+            print('crawl failed')
+            yield response.request
 
-        print(response.body)
-        req = response.request
-        req.meta["change_proxy"] = True
-        yield req
         # yield response.request
 
         # if response.body == "banned":
@@ -63,4 +74,5 @@ def crawl_test():
     return run_spider()
 
 if __name__ == '__main__':
-    crawl_test.delay()
+    # crawl_test.delay()
+    crawl_test()
