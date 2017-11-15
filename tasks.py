@@ -11,7 +11,7 @@ from scrapy.crawler import CrawlerProcess
 from scrapy.settings import Settings
 from scrapy.utils.project import get_project_settings
 
-from crawls.news_spider.spiders.newsspider import NeteaseNewsSpider
+from crawls.news_spider.spiders.newsspider import NeteaseNewsSpider, SinaNewsSpider
 
 # app = Celery('tasks', broker=CELERY_BROKER, backend=CELERY_BACKEND)
 celery_app = Celery('tasks')
@@ -23,6 +23,7 @@ celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
 def run_spider():
     spider = NeteaseNewsSpider()
+    # spider = SinaNewsSpider()
     # settings = Settings(
     #     {
     #         'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)',
@@ -46,4 +47,5 @@ def crawl():
 
 
 if __name__ == '__main__':
-    crawl.delay()
+    # crawl.delay()
+    crawl()

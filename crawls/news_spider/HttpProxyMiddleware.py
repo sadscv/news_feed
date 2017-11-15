@@ -12,7 +12,7 @@ import pymysql
 from twisted.web._newclient import ResponseNeverReceived
 from twisted.internet.error import TimeoutError, ConnectionRefusedError, ConnectError
 
-from CONFIG.config import DB
+from CONFIG.config import DB, USE_FETCH_FREE_PROXYES
 from crawls.ProxyPool.proxypool import IsEnable
 from crawls.news_spider import fetch_free_proxyes
 
@@ -53,13 +53,14 @@ class HttpProxyMiddleware(object):
         # 使用http代理还是https代理
         self.uses_https = use_https
         # 从文件读取初始代理
-        for ip in self.get_proxyIPs():
-            self.proxyes.append({"proxy": ip,
-                                 "valid": True,
-                                 "count": 0})
+        #Todo 处理与数据库的衔接
 
-        '''
-        if os.path.exists(self.proxy_file):
+        if not USE_FETCH_FREE_PROXYES:
+            for ip in self.get_proxyIPs():
+                self.proxyes.append({"proxy": ip,
+                                     "valid": True,
+                                     "count": 0})
+        elif os.path.exists(self.proxy_file):
             with open(self.proxy_file, "r") as fd:
                 lines = fd.readlines()
                 for line in lines:
@@ -69,8 +70,6 @@ class HttpProxyMiddleware(object):
                     self.proxyes.append({"proxy": line,
                                         "valid": True,
                                         "count": 0})
-
-        '''
 
     def get_proxyIPs(self):
         conn = pymysql.connect(host=DB['HOST'],
@@ -198,16 +197,19 @@ class HttpProxyMiddleware(object):
         if self.proxy_index == 0: # 每次不用代理直接下载时更新self.last_no_proxy_time
             self.last_no_proxy_time = datetime.now()
 
+        # 看我们存放ip的格式，如果是1.1.1.1这样，就在它前面加上http://
+        # Todo 更新兼容https
         if proxy["proxy"]:
-            request.meta["proxy"] = 'http://'+str(proxy["proxy"])
+            if not str(proxy["proxy"]).startswith('http'):
+                request.meta["proxy"] = 'http://'+str(proxy["proxy"])
+            else:
+                request.meta["proxy"] = proxy["proxy"]
         elif "proxy" in request.meta.keys():
             del request.meta["proxy"]
         # IsEnable(ip=)
         print('#######', 'proxy:%s, index:%s'% (proxy["proxy"], self.proxy_index))
         request.meta["proxy_index"] = self.proxy_index
-        print(request.meta['proxy_index'])
         proxy["count"] += 1
-        # return request
 
     def invalid_proxy(self, index):
         print('invalid_proxy')
@@ -266,6 +268,10 @@ class HttpProxyMiddleware(object):
             logger.info("change proxy request get by spider: %s" % request)
             self.invalid_proxy(request.meta["proxy_index"])
             request.meta["change_proxy"] = False
+        # if "proxy_index" not in request.meta.keys():
+        #     request.meta["proxy_index"] = 0
+        # if self.proxyes[request.meta["proxy_index"]]["count"] > 3:
+        #     self.invalid_proxy(request.meta["proxy_index"])
         self.set_proxy(request)
 
     def process_response(self, request, response, spider):

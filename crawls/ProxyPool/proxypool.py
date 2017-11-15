@@ -24,11 +24,9 @@ celery_app.config_from_object('CONFIG.celeryconfig')
 celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
 logger = logging.getLogger(__name__)
-# CRAWLERS = [SpiderMimvp, SpiderCoderBusy, SpiderIP66, SpiderIP89,
-#             SpiderKxdaili, SpiderData5u, SpiderIP181,
-#             SpiderXicidaili]
-# Todo 恢复crawlers
-CRAWLERS = [SpiderIP66, SpiderIP181]
+CRAWLERS = [SpiderMimvp, SpiderCoderBusy, SpiderIP66, SpiderIP89,
+            SpiderKxdaili, SpiderData5u, SpiderIP181,
+            SpiderXicidaili]
 
 class IsEnable(threading.Thread):
     def __init__(self, ip, debug=False, logger=None):
@@ -136,3 +134,5 @@ if __name__ == '__main__':
 
     # update_proxy.delay()
     update_proxy()
+
+        # TOdo 明天要做的事，调用celery接口，随时更新代理ＩＰ，继续调试．

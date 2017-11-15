@@ -32,33 +32,14 @@ class TestSpider(scrapy.Spider):
     )
 
     def parse(self, response):
-        from scrapy.shell import inspect_response
         global COUNT
         COUNT += 1
         if response.body:
-            # req = Request(response.url, self.parse, dont_filter=True)
             req = response.request
-            req.meta["change_proxy"] = True
-            # inspect_response(response, self)
-            # req.meta["proxy_index"] = 0
-            print('crawl success', req.meta['proxy_index'])
-            if req.meta['proxy_index'] > 5:
-                inspect_response(response, self)
             yield req
-            # yield response.request
         else:
             print('crawl failed')
             yield response.request
-
-        # yield response.request
-
-        # if response.body == "banned":
-        #     req = response.request
-        #     req.meta["change_proxy"] = True
-        #     yield req
-        # else:
-        #     logger.info("got page: %s" % response.body)
-        #     yield response.request
 
 def run_spider():
     spider = TestSpider()

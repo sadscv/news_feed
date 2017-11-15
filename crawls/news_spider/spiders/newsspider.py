@@ -16,6 +16,8 @@ import re
 from scrapy import Request
 import time
 
+
+
 def ListCombiner(lst):
     string = ""
     for e in lst:
@@ -25,6 +27,7 @@ def ListCombiner(lst):
 
 
 class NeteaseNewsSpider(CrawlSpider):
+    website_possible_httpstatus_list = [404, 403, 301]
     name = "netease_news_spider"
     start_urls = ['http://news.163.com/']
 
@@ -33,6 +36,8 @@ class NeteaseNewsSpider(CrawlSpider):
 
 
     # http://news.163.com/17/0823/20/CSI5PH3Q000189FH.html
+    # Todo fix bug
+    # 诸如 http://news.163.com/16/0602/16/BOIMS8PF00014JB5.htm0 这样的链接能够通过url_patten.
     url_pattern = r'(http://news\.163\.com)/(\d{2})/(\d{4})/\d+/(\w+)\.html'
     rules = [
         Rule(LxmlLinkExtractor(allow=[url_pattern]), callback='parse_news', follow=True)
