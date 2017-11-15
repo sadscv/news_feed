@@ -1,9 +1,9 @@
 import threading
 import time
-# import sys
-# sys.path.append('../')
 import pymysql
 import requests
+from celery import Celery
+
 from crawls.ProxyPool.proxy_spiders.spider_66ip import SpiderIP66
 from crawls.ProxyPool.proxy_spiders.spider_89ip import SpiderIP89
 from crawls.ProxyPool.proxy_spiders.spider_coderbusy import SpiderCoderBusy
@@ -15,7 +15,14 @@ from crawls.ProxyPool.proxy_spiders.spider_xicidaili import SpiderXicidaili
 
 from CONFIG.config import DB
 
-MYSQL_CONF = DB
+# all class of crawler
+celery_app = Celery('crawls.ProxyPool.proxypool')
+celery_app.config_from_object('CONFIG.celeryconfig')
+celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
+
+CRAWLERS = [SpiderMimvp, SpiderCoderBusy, SpiderIP66, SpiderIP89,
+            SpiderKxdaili, SpiderData5u, SpiderIP181,
+            SpiderXicidaili]
 
 
 class IsEnable(threading.Thread):
@@ -42,13 +49,13 @@ class IsEnable(threading.Thread):
     def insert_into_sql(self):
         global cursor
         global conn
-        global crawl_ip_count
+        global CRAWL_IP_COUNT
         try:
             date = time.strftime('%Y-%m-%d %X', time.localtime())
             cursor.execute("insert into proxypool(ip,port,time) values" + str(
                 (self.ip.split(':')[0], self.ip.split(':')[1], date)))
             conn.commit()
-            crawl_ip_count += 1
+            CRAWL_IP_COUNT += 1
         except:
             pass
 
@@ -57,59 +64,59 @@ def get_current_time():
     return time.strftime('%Y-%m-%d %X', time.localtime())
 
 
-if __name__ == '__main__':
-    lock = threading.Lock()
-    crawlers = [SpiderMimvp, SpiderCoderBusy, SpiderIP66, SpiderIP89,
-                SpiderKxdaili, SpiderData5u, SpiderIP181,
-                SpiderXicidaili]
-
-    while True:
-        crawl_ip_count = 0
-        conn = pymysql.connect(host=DB['HOST'],
-                            user=DB['USER'],
-                            passwd=DB['PASSWORD'],
-                            db=DB['DB_NAME'],
-                            port=DB['PORT'],
-                            charset='utf8')
-        cursor = conn.cursor()
-        result = []
-        tasks = []
-        for crawler in crawlers:
-            task = crawler()
-            task.setDaemon(True)
-            tasks.append(task)
-        for task in tasks:
-            task.start()
-        for task in tasks:
-            task.join()
-        for task in tasks:
-            try:
-                result += task.result
-            except:
-                continue
-        print('length of result:{}'.format(len(result)))
-
-        while (len(result)):
-            num = 0
-            # 循环测试IP,开50个线程
-            while (num < 50):
-                try:
-                    ip = result.pop()
-                    # print('[Spider][ProxyPool][Testing ip:[%s]'%ip)
-                except:
-                    break
-                work = IsEnable(ip)
-                work.setDaemon(True)
-                work.start()
-                num += 1
-            time.sleep(5)
+@celery_app.task
+def update_proxy():
+    global CRAWL_IP_COUNT
+    CRAWL_IP_COUNT = 0
+    conn = pymysql.connect(host=DB['HOST'],
+                        user=DB['USER'],
+                        passwd=DB['PASSWORD'],
+                        db=DB['DB_NAME'],
+                        port=DB['PORT'],
+                        charset='utf8')
+    cursor = conn.cursor()
+    result = []
+    tasks = []
+    for crawler in CRAWLERS:
+        task = crawler()
+        task.setDaemon(True)
+        task.start()
+        task.join()
+        tasks.append(task)
+    for task in tasks:
         try:
-            conn.commit()
+            result += task.result
         except:
-            pass
-        cursor.close()
-        conn.close()
-        print('[%s][ProxyPool]Crawl IP Count:' %
-              get_current_time(), crawl_ip_count)
-        print('[%s][ProxyPool][Sleeping]' % get_current_time())
-        time.sleep(300)
+            continue
+    print('length of result:{}'.format(len(result)))
+
+    while (len(result)):
+        num = 0
+        # 循环测试IP,开50个线程
+        while (num < 500):
+            try:
+                ip = result.pop()
+                print('[Spider][ProxyPool][Testing ip:[%s]'%ip)
+            except:
+                break
+            work = IsEnable(ip)
+            work.setDaemon(True)
+            work.start()
+            num += 1
+        time.sleep(5)
+    try:
+        conn.commit()
+    except:
+        pass
+    cursor.close()
+    conn.close()
+    print('[%s][ProxyPool]Crawl IP Count:' %
+          get_current_time(), CRAWL_IP_COUNT)
+    print('[%s][ProxyPool][Sleeping]' % get_current_time())
+
+
+if __name__ == '__main__':
+    CRAWL_IP_COUNT = 0
+    lock = threading.Lock()
+
+    update_proxy.delay()

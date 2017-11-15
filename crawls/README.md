@@ -6,8 +6,10 @@
 [scrapy官方入门指南](http://scrapy-chs.readthedocs.io/zh_CN/latest/intro/tutorial.html)
 
 # Todo 
-1. 命令行调用Scrapy
-2. Celery调用Scrapy
+- [x] 命令行调用Scrapy
+- [x] Celery调用Scrapy
+- [x] 封装代理IP池抓取接口,让Celery能够调用,完成一轮抓取
 
 3.
 https://www.youtube.com/watch?v=-ISgjBQDnhw
+

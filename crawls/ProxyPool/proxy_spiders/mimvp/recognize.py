@@ -60,8 +60,8 @@ class CaptchaRecognize:
         self.imgset = []
         for letter in self.letters:
             temp = []
-            for img in os.listdir('./proxy_spiders/mimvp/icon/%s' % (letter)):
-                temp.append(buildvector(Image.open('./proxy_spiders/mimvp/icon/%s/%s' % (letter, img))))
+            for img in os.listdir('./crawls/ProxyPool/proxy_spiders/mimvp/icon/%s' % (letter)):
+                temp.append(buildvector(Image.open('./crawls/ProxyPool/proxy_spiders/mimvp/icon/%s/%s' % (letter, img))))
             self.imgset.append({letter: temp})
 
     # 计算矢量大小
