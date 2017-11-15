@@ -36,11 +36,13 @@ class TestSpider(scrapy.Spider):
         global COUNT
         COUNT += 1
         if response.body:
-            req = Request(response.url, self.parse, dont_filter=True)
+            # req = Request(response.url, self.parse, dont_filter=True)
+            req = response.request
             req.meta["change_proxy"] = True
-            req.meta["proxy_index"] = 0
-            print('crawl success')
-            if req.meta['proxy_index'] != 0:
+            # inspect_response(response, self)
+            # req.meta["proxy_index"] = 0
+            print('crawl success', req.meta['proxy_index'])
+            if req.meta['proxy_index'] > 5:
                 inspect_response(response, self)
             yield req
             # yield response.request

@@ -19,7 +19,7 @@ NEWSPIDER_MODULE = 'crawls.news_spider.spiders'
 #USER_AGENT = 'news_spider (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -62,8 +62,11 @@ http://www.kohn.com.cn/wordpress/?p=208
 
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware': 350,
-    'scrapy.contrib.downloadermiddleware.retry.RetryMiddleware': 351,
-    'crawls.news_spider.HttpProxyMiddleware.HttpProxyMiddleware': 666,
+    'scrapy.downloadermiddlewares.retry.RetryMiddleware': 351,
+    # 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware':
+    'scrapy.downloadermiddleware.useragent.UserAgentMiddleware': None,
+    'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
+    'crawls.news_spider.HttpProxyMiddleware.HttpProxyMiddleware': 999,
 }
 
 DOWNLOAD_TIMEOUT = 10
@@ -75,7 +78,7 @@ DOWNLOAD_TIMEOUT = 10
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
-Todo = 'to be update'
+# Todo = 'to be update'
 # ITEM_PIPELINES = {
 #    'news_spider.pipelines.NewsSpiderPipeline': 300,
 # }

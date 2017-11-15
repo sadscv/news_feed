@@ -41,7 +41,7 @@ class HttpProxyMiddleware(object):
         # 初始化代理列表
         self.proxyes = [{"proxy": None, "valid": True, "count": 0}]
         # 初始时使用0号代理(即无代理)
-        self.proxy_index = 5
+        self.proxy_index = 0
         # 表示可信代理的数量(如自己搭建的HTTP代理)+1(不用代理直接连接)
         self.fixed_proxy = len(self.proxyes)
         # 上一次抓新代理的时间
@@ -199,13 +199,15 @@ class HttpProxyMiddleware(object):
             self.last_no_proxy_time = datetime.now()
 
         if proxy["proxy"]:
-            request.meta["proxy"] = proxy["proxy"]
+            request.meta["proxy"] = 'http://'+str(proxy["proxy"])
         elif "proxy" in request.meta.keys():
             del request.meta["proxy"]
         # IsEnable(ip=)
         print('#######', 'proxy:%s, index:%s'% (proxy["proxy"], self.proxy_index))
         request.meta["proxy_index"] = self.proxy_index
+        print(request.meta['proxy_index'])
         proxy["count"] += 1
+        # return request
 
     def invalid_proxy(self, index):
         print('invalid_proxy')
