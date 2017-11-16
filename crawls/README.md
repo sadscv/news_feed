@@ -13,3 +13,9 @@
 3.
 https://www.youtube.com/watch?v=-ISgjBQDnhw
 
+xpath文档： http://www.w3school.com.cn/xpath/
+
+https://github.com/lining0806/PythonSpiderNotes
+
+beautifulsoup 官方文档 https://www.crummy.com/software/BeautifulSoup/bs4/doc/index.zh.html
+
