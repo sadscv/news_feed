@@ -3,15 +3,18 @@
 # @Time    : 17-11-9 上午11:26
 # @Author  : sadscv
 # @File    : tasks.py
+
 import os
 import sys
+
 from celery import Celery
 from celery.utils.log import get_task_logger
 from scrapy.crawler import CrawlerProcess
 from scrapy.settings import Settings
-from scrapy.utils.project import get_project_settings
+
 
 from crawls.news_spider.spiders.newsspider import NeteaseNewsSpider, SinaNewsSpider
+
 
 # app = Celery('tasks', broker=CELERY_BROKER, backend=CELERY_BACKEND)
 celery_app = Celery('tasks')

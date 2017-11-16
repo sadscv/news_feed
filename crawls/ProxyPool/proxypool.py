@@ -17,6 +17,7 @@ from crawls.ProxyPool.proxy_spiders.spider_xicidaili import SpiderXicidaili
 
 from CONFIG.config import DB
 
+
 # all class of crawler
 
 celery_app = Celery('crawls.ProxyPool.proxypool')
@@ -36,7 +37,6 @@ class IsEnable(threading.Thread):
         self.proxies = {
             'http': 'http://%s' % ip
         }
-
 
     def run(self):
         try:
@@ -73,6 +73,7 @@ class IsEnable(threading.Thread):
 
 def get_current_time():
     return time.strftime('%Y-%m-%d %X', time.localtime())
+
 
 
 @celery_app.task
@@ -136,3 +137,4 @@ if __name__ == '__main__':
     update_proxy()
 
         # TOdo 明天要做的事，调用celery接口，随时更新代理ＩＰ，继续调试．
+
