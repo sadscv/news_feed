@@ -6,6 +6,7 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),".."))
 sys.path.append(BASE_DIR)
 
 from CONFIG.config import DB
+
 from sqlalchemy import ForeignKey
 from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, Sequence

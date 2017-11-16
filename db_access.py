@@ -5,7 +5,9 @@ import hashlib
 
 from sqlalchemy import desc
 
+
 from CONFIG.config import MD5_SALT
+
 
 from models import *
 from utils.blacklist import blacklist_title_text
