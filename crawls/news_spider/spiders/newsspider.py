@@ -226,15 +226,98 @@ class TencentNewsSpider(CrawlSpider):
         item['comments'] = comments
         return item
 
-
+#wirted by myself 搜狐ｏｋ
 class SohuNewsSpider(CrawlSpider):
     name = "sohu_news_spider"
-    pass
+    start_urls = ['http://news.sohu.com/',
+                  'http://travel.sohu.com/',
+                  'http://it.sohu.com/',
+                  'http://sports.sohu.com/',
+                  'http://yule.sohu.com/',
+                  'http://cul.sohu.com/',
+                  'http://society.sohu.com/'
+                  ]
+
+
+    allowed_domains = ['sohu.com']
+    # http://www.sohu.com/a/203596129_100001551?_f=index_chan08news_5
+    # url_pattern = r'http://www.sohu.com/a/(\d{9})\_(\d{6, 9})\?\_f=index\_chan08(\w+)\_(\d{1,4})'
+    url_pattern = r'www.sohu.com/a/(\d{6,9})\_(\d{6,9})'
+    rules = [
+        Rule(LxmlLinkExtractor(allow=[url_pattern]), callback='parse_news', follow=True)
+    ]
+
+    def parse_news(self, response):
+        sel = Selector(response)
+        title = sel.xpath('//div[@class="text-title"]/h1/text()').extract()[0].split()
+        pattern = re.match(self.url_pattern, str(response.url))
+        source = 'news.sohu.com'
+
+        date = sel.xpath('//div[@class="article-info"]/span/text()').extract()[0][0:10]
+        time = sel.xpath('//div[@class="article-info"]/span/text()').extract()[0][10:-1]
+        url = response.url
+        newsId = re.findall(r'www.sohu.com/a/(.*?)?_',url, re.S)[0]
+        contents = ListCombiner(sel.xpath('//article[@class="article"]/p/text()').extract())
+        # comments= sel.xpath('//div[@class="right"]/span'
+
+        comments = 0
+        item = NewsItem()
+        item['source'] = source
+        item['time'] = time
+        item['date'] = date
+        item['contents'] = contents
+        item['title'] = title
+        item['url'] = url
+        item['newsId'] = newsId
+        item['comments'] = comments
+        yield item
 
 
 
-class IfengNewsSpider(CrawlSpider):
-    name = "ifeng_news_spider"
-    pass
+# 新华网
 
+class XinhuaNewsSpider(CrawlSpider):
+    name = "xinhua_news_spider"
+    start_urls = ['http://www.xinhuanet.com/']
+
+
+    allowed_domains = ['xinhuanet.com']
+    # http://news.xinhuanet.com/fortune/2017-11/10/c_1121937779.htm
+    url_pattern = r'http://news.xinhuanet.com/([a-z]+)/*/2017-(\d{1,2})/(\d{1,2})/c\_(\d{6,10}).htm'
+    rules = [
+        Rule(LxmlLinkExtractor(allow=[url_pattern]), callback='parse_news', follow=True)
+    ]
+
+    def parse_news(self, response):
+        sel = Selector(response)
+        title = sel.xpath('//div[@class="h-title"]/text()').extract()
+
+        pattern = re.match(self.url_pattern, str(response.url))
+        source = 'xinhuanet.com'
+
+        date = sel.xpath('//div[@class="h-info"]/span/text()').extract()
+
+        time = sel.xpath('//div[@class="h-info"]/span/text()').extract()
+        url = response.url
+
+        newsId = re.findall(r'c_(.*?).htm',url, re.S)[0]
+        contents = ListCombiner(sel.xpath('//div[@id="p-detail"]/p/text()').extract())
+        # comments= sel.xpath('//div[@class="right"]/span'
+
+        comments = 0
+        item = NewsItem()
+        item['source'] = source
+        item['time'] = time
+        item['date'] = date
+        item['contents'] = contents
+        item['title'] = title
+        item['url'] = url
+        item['newsId'] = newsId
+        item['comments'] = comments
+        yield item
+
+
+
+class NewsSpider(CrawlSpider):
+    name = "people_news_spider"
 
