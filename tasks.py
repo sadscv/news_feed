@@ -11,7 +11,7 @@ from celery import Celery
 from celery.utils.log import get_task_logger
 from scrapy.crawler import CrawlerProcess
 from scrapy.settings import Settings
-
+from scrapy.utils.project import get_project_settings
 
 from crawls.news_spider.spiders.newsspider import NeteaseNewsSpider, SinaNewsSpider
 

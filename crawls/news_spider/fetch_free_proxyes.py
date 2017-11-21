@@ -1,8 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import multiprocessing
+import os
+import queue
+
 from bs4 import BeautifulSoup
 import urllib.request, urllib.error, urllib.parse
 import logging
+
+from tqdm import tqdm
+
+from crawls.ProxyPool.proxypool import IsEnable
 
 logger = logging.getLogger(__name__)
 
@@ -217,9 +225,33 @@ def fetch_all(endpage=2, https=False):
     proxyes += fetch_66ip(https)
     valid_proxyes = []
     logger.info("checking proxyes validation")
+    count = 0
+    # for p in proxyes:
+    # for p in tqdm(proxyes):
+    #     print(count)
+    #     count += 1
+    #     if check(p):
+    #         valid_proxyes.append(p)
+
+    # test for celery
+    q = queue.Queue(maxsize=0)
+    num_threads = min(50, len(proxyes))
+    results = [{} for i in proxyes]
+    for i in range(len(results)):
+        q.put((i, proxyes[i]))
+
+    threads = []
     for p in proxyes:
-        if check(p):
-            valid_proxyes.append(p)
+        work = IsEnable(result=results, debug=True, queue=q)
+        work.setDaemon(True)
+        threads.append(work)
+        work.start()
+    for t in threads:
+        t.join()
+    for i in range(len(proxyes)):
+        q.put((i, proxyes[i]))
+
+    valid_proxyes = results
     return valid_proxyes
 
 if __name__ == '__main__':

@@ -51,10 +51,10 @@ class HttpProxyMiddleware(object):
         # 一个将被设为invalid的代理如果已经成功爬取大于这个参数的页面， 将不会被invalid
         self.invalid_proxy_threshold = 200
         # 使用http代理还是https代理
-        self.uses_https = use_https
+        self.use_https = use_https
+
         # 从文件读取初始代理
         #Todo 处理与数据库的衔接
-
         if not USE_FETCH_FREE_PROXYES:
             for ip in self.get_proxyIPs():
                 self.proxyes.append({"proxy": ip,
@@ -188,7 +188,6 @@ class HttpProxyMiddleware(object):
         """
         将request设置使用为当前的或下一个有效代理
         """
-        print('set_proxy')
         proxy = self.proxyes[self.proxy_index]
         if not proxy["valid"]:
             self.inc_proxy_index()
@@ -207,12 +206,11 @@ class HttpProxyMiddleware(object):
         elif "proxy" in request.meta.keys():
             del request.meta["proxy"]
         # IsEnable(ip=)
-        print('#######', 'proxy:%s, index:%s'% (proxy["proxy"], self.proxy_index))
+        logger.info('set proxy => %s, now proxy_index => %s' % (proxy['proxy'], self.proxy_index))
         request.meta["proxy_index"] = self.proxy_index
         proxy["count"] += 1
 
     def invalid_proxy(self, index):
-        print('invalid_proxy')
         """
         将index指向的proxy设置为invalid,
         并调整当前proxy_index到下一个有效代理的位置
@@ -268,10 +266,8 @@ class HttpProxyMiddleware(object):
             logger.info("change proxy request get by spider: %s" % request)
             self.invalid_proxy(request.meta["proxy_index"])
             request.meta["change_proxy"] = False
-        # if "proxy_index" not in request.meta.keys():
-        #     request.meta["proxy_index"] = 0
-        # if self.proxyes[request.meta["proxy_index"]]["count"] > 3:
-        #     self.invalid_proxy(request.meta["proxy_index"])
+        if "proxy_index" not in request.meta.keys():
+            request.meta["proxy_index"] = 0
         self.set_proxy(request)
 
     def process_response(self, request, response, spider):
@@ -279,7 +275,7 @@ class HttpProxyMiddleware(object):
         检查response.status, 根据status是否在允许的状态码中决定是否切换到下一个proxy, 或者禁用proxy
         """
         if "proxy" in request.meta.keys():
-            logger.debug("proxy:%s %s %s" % (request.meta["proxy"], response.status, request.url))
+            logger.debug("processing response via proxy => %s %s %s" % (request.meta["proxy"], response.status, request.url))
         else:
             logger.debug("proxy:None %s %s" % (response.status, request.url))
 
@@ -307,6 +303,7 @@ class HttpProxyMiddleware(object):
         if isinstance(exception, self.DONT_RETRY_ERRORS):
             if request_proxy_index > self.fixed_proxy - 1 and self.invalid_proxy_flag: # WARNING 直连时超时的话换个代理还是重试? 这是策略问题
                 if self.proxyes[request_proxy_index]["count"] < self.invalid_proxy_threshold:
+                    logger.info('connection timeout,invalid current proxy')
                     self.invalid_proxy(request_proxy_index)
                 elif request_proxy_index == self.proxy_index:  # 虽然超时，但是如果之前一直很好用，也不设为invalid
                     self.inc_proxy_index()
