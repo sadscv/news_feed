@@ -16,8 +16,6 @@ import re
 from scrapy import Request
 import time
 
-
-
 def ListCombiner(lst):
     string = ""
     for e in lst:
@@ -30,7 +28,6 @@ class NeteaseNewsSpider(CrawlSpider):
     website_possible_httpstatus_list = [404, 403, 301]
     name = "netease_news_spider"
     start_urls = ['http://news.163.com/']
-
     # Spider中间件会对Spider发出的request进行检查，只有满足allow_domain才会被允许发出
     allowed_domains = ['news.163.com']
 
@@ -100,7 +97,6 @@ class SinaNewsSpider(CrawlSpider):
     allowed_domains = ['news.sina.com.cn']
     start_urls = ['http://news.sina.com.cn']
     # http://finance.sina.com.cn/review/hgds/2017-08-25/doc-ifykkfas7684775.shtml
-    # url_pattern = r'(http://(?:\w+\.)*news\.sina\.com\.cn)/.*/(\d{4}-\d{2}-\d{2})/doc-(.*)\.shtml'
     today_date = time.strftime('%Y-%m-%d',time.localtime(time.time()))
     url_pattern = r'(http://(?:\w+\.)*news\.sina\.com\.cn)/.*/({})/doc-(.*)\.shtml'.format(today_date)
 
@@ -273,51 +269,324 @@ class SohuNewsSpider(CrawlSpider):
         yield item
 
 
+# 江西晨报  有问题
+class JxcbwNewsSpider(CrawlSpider):
+    name = "jxcbw_news_spider"
+    allowed_domains = ['jxcbw.cn']
+    start_urls = ['http://www.jxcbw.cn/mainpages/default.aspx']
+    #http://www.jxcbw.cn/mainpages/NewsInfo.aspx?NewsID=69366&NewsType=LE123
+    #http://www.jxcbw.cn/mainpages/NewsInfo.aspx?NewsID=70152&NewsType=LE107
+    url_pattern = r'http://www.jxcbw.cn/[a-z]+/NewsInfo.aspx?(NewsID=\d{3,8}&NewsType=LE\d{1,7})'
+    rules = [
+            Rule(LxmlLinkExtractor(allow=[url_pattern]), callback='parse_news', follow=True)
+         ]
+    def parse_news(self, response):
+        sel = Selector(response)
+        pattern = re.match(self.url_pattern, str(response.url))
+        source = 'www.jxcbw.cn'
+        time = sel.xpath('//span[@class="time fl"]/text()').extract()
+        date = time[0]
+        title = sel.xpath('//h2[@class="title-class2"]/text()').extract()
+        newsId = pattern.group(1)
+        url = response.url
+        # if sel.xpath('//div[@id="content"]/div/text()'):
+        #     contents = ListCombiner(sel.xpath('//div[@id="content"]/div/text()').extract())
+        # else:
+        #     contents = "unknown"
+        comments= 0
+        contents = 0
 
-# 新华网
+        item = NewsItem()
+        item['source'] = source
+        item['title'] = title
+        item['date'] = date
+        item['time'] = time
+        item['newsId'] = newsId
+        item['url'] = url
+        item['contents'] = contents
+        item['comments'] = comments
+        yield item
 
-class XinhuaNewsSpider(CrawlSpider):
-    name = "xinhua_news_spider"
-    start_urls = ['http://www.xinhuanet.com/']
+#新气象  successful
+class ZgqxbNewsSpider(CrawlSpider):
+    name = "zgqxb_news_spider"
+    allowed_domains = ['zgqxb.com.cn']
+    start_urls = ['http://www.zgqxb.cn']
+    # http: // www.zgqxb.com.cn / pressman / bjdp / 201711 / t20171102_66412.htm
+    # http: // www.zgqxb.com.cn / kjzg / kejidt / 201711 / t20171121_66600.htm
+    url_pattern = r'(http://www\.zgqxb\.com\.cn)/.*/\d{6}/t(\d+)_(\d+).htm'
+    rules = [
+            Rule(LxmlLinkExtractor(allow=[url_pattern]), callback='parse_news', follow=True)
+        ]
+
+    def parse_news(self, response):
+        sel = Selector(response)
+        pattern = re.match(self.url_pattern, str(response.url))
+        source = pattern.group(1)
+        date = pattern.group(2)
+        date = date[0:4] + '/' + date[4:6] +'/' + date[6:]
+        newsId = pattern.group(3)
+        #时间
+        if sel.xpath('//span[@class ="l01 gray"]/text()'):
+            time = sel.xpath('//span[@class ="l01 gray"]/text()').extract()[-1]
+        else:
+            time = "unknown"
+        #标题
+        if sel.xpath('//strong/b/text()'):
+            title = ListCombiner(sel.xpath('//strong/b/text()').extract())
+        else:
+            title = "unknown"
+        url = response.url
+        #内容
+        if sel.xpath('//div[@class="TRS_Editor"]/p/text()'):
+            contents = ListCombiner(sel.xpath('//div[@class="TRS_Editor"]/p/text()').extract())
+        elif sel.xpath('//font[@class="font_txt_zw"]/p/text()'):
+            contents = ListCombiner(sel.xpath('//font[@class="font_txt_zw"]/p/text()').extract())
+        elif sel.xpath('//font[@class="font_txt_zw"]/text()'):
+            contents = ListCombiner(sel.xpath('//font[@class="font_txt_zw"]/text()').extract())
+        else:
+            contents = 'unknown'
+        comments = 0
 
 
-    allowed_domains = ['xinhuanet.com']
-    # http://news.xinhuanet.com/fortune/2017-11/10/c_1121937779.htm
-    url_pattern = r'http://news.xinhuanet.com/([a-z]+)/*/2017-(\d{1,2})/(\d{1,2})/c\_(\d{6,10}).htm'
+        item = NewsItem()
+        item['source'] = source
+        item['title'] = title
+        item['date'] = date
+        item['time'] = time
+        item['newsId'] = newsId
+        item['url'] = url
+        item['contents'] = contents
+        item['comments'] = comments
+        yield item
+
+
+#新民网   successful
+class XinminNewsSpider(CrawlSpider):
+    name = "xinmin_news_spider"
+    allowed_domains = ['xinmin.cn']
+    start_urls = ['http://www.xinmin.cn']
+    #http://edu.xinmin.cn/tt/2017/11/15/31334031.html
+    #http://newsxmwb.xinmin.cn/world/2017/11/21/31335695.html
+    url_pattern = r'(http://.*\.xinmin\.cn)/.*/(\d{4})/(\d{2})/(\d{2})/(\d+).html'
+    rules = [
+            Rule(LxmlLinkExtractor(allow=[url_pattern]), callback='parse_news', follow=True)
+        ]
+
+    def parse_news(self, response):
+        sel = Selector(response)
+        pattern = re.match(self.url_pattern, str(response.url))
+        source = pattern.group(1)
+        date = pattern.group(2) + '/' + pattern.group(3) + '/' + pattern.group(4)
+        newsId = pattern.group(5)
+        if sel.xpath('//div[@class="info"]/span/text()'):
+            time = sel.xpath('//div[@class="info"]/span/text()').extract()[-1]
+        elif sel.xpath('//span[@class="page_time"]/text()'):
+            time = sel.xpath('//span[@class="page_time"]/text()').extract()
+        else:
+            time = "unknown"
+        if sel.xpath('//h1[@class="article_title"]/text()'):
+            title = sel.xpath('//h1[@class="article_title"]/text()').extract()
+        elif sel.xpath('//h3[@class="content_title"]/text()'):
+            title = sel.xpath('//h3[@class="content_title"]/text()').extract()
+        else:
+            title = "unknown"
+        url = response.url
+        contents = ListCombiner(sel.xpath('//div[@class="a_p"]/p/text()').extract())
+        comments = 0
+
+        item = NewsItem()
+        item['source'] = source
+        item['title'] = title
+        item['date'] = date
+        item['time'] = time
+        item['newsId'] = newsId
+        item['url'] = url
+        item['contents'] = contents
+        item['comments'] = comments
+        yield item
+
+
+# 央视新闻 successful
+class CctvNewsSpider(CrawlSpider):
+    name = "cctv_news_spider"
+    allowed_domains = ['news.cctv.com']
+    start_urls = ['http://news.cctv.com']
+    #http: // jiankang.cctv.com / 2017 / 11 / 17 / ARTIsSTfqrpnb6Nj2UZydIXo171117.shtml
+    #http: // tv.cctv.com / 2017 / 11 / 19 / VIDELf9eHnwFxj0h0p77qwNV171119.shtml
+    url_pattern = r'(http://(?:\w+\.)*news\.cctv\.com)/(\d{4})/(\d{2})/(\d{2})/(\w+)\.shtml'
+    rules = [
+            Rule(LxmlLinkExtractor(allow=[url_pattern]), callback='parse_news', follow=True)
+        ]
+    def parse_news(self, response):
+        sel = Selector(response)
+        pattern = re.match(self.url_pattern, str(response.url))
+        source = pattern.group(1)
+        date = pattern.group(2) + '/' + pattern.group(3) + '/'+ pattern.group(4)
+        newsId = pattern.group(5)
+        if sel.xpath('//span[@class="info"]/i/text()'):
+            time = sel.xpath('//span[@class="info"]/i/text()').extract()
+        elif sel.xpath('//span[@class="time"]/text()'):
+            time = sel.xpath('//span[@class="time"]/text()').extract()
+        else:
+            time = "unknown"
+        if sel.xpath('//div[@class="cnt_bd"]/h1/text()'):
+            title = sel.xpath('//div[@class="cnt_bd"]/h1/text()').extract()
+        elif sel.xpath('//h3[@class="title"]/text()'):
+            title = sel.xpath('//h3[@class="title"]/text()').extract()
+        else:
+            title = "unknown"
+        url = response.url
+        contents = ListCombiner(sel.xpath('//div[@class="cnt_bd"]/p/text()').extract())
+        comments = 0
+
+        item = NewsItem()
+        item['source'] = source
+        item['title'] = title
+        item['date'] = date
+        item['time'] = time
+        item['newsId'] = newsId
+        item['url'] = url
+        item['contents'] = contents
+        item['comments'] = comments
+        yield item
+
+
+
+
+
+# 江南都市报 successful
+class JndsbNewsSpider(CrawlSpider):
+    name = "jndsb_news_spider"
+    allowed_domains = ['jndsb.jxnews.com.cn']
+    start_urls = ['http://jndsb.jxnews.com.cn']
+    #http://jndsb.jxnews.com.cn/system/2017/06/17/016210714.shtml
+    url_pattern = r'(http://jndsb\.jxnews\.com\.cn)/system/(\d{4})/(\d{2})/(\d{2})/(\d+)\.shtml'
+    rules = [
+        Rule(LxmlLinkExtractor(allow=[url_pattern]), callback='parse_news', follow=True)
+    ]
+    def parse_news(self, response):
+        sel = Selector(response)
+        pattern = re.match(self.url_pattern, str(response.url))
+        source = pattern.group(1)
+        date = pattern.group(2) + '/' + pattern.group(3) + '/' + pattern.group(4)
+        if sel.xpath('//span[@id="pubtime_baidu"]/text()'):
+            time = sel.xpath('//span[@id="pubtime_baidu"]/text()').extract_first().split()
+        else:
+            time = "unknown"
+        title = sel.xpath('//div[@class="BiaoTi"]/text()').extract()
+        url = response.url
+        newsId = pattern.group(5)
+        contents = ListCombiner(sel.xpath('//div[@class="Content"]/p/text()').extract())
+        comments = 0
+
+        item = NewsItem()
+        item['source'] = source
+        item['title'] = title
+        item['date'] = date
+        item['time'] = time
+        item['newsId'] = newsId
+        item['url'] = url
+        item['contents'] = contents
+        item['comments'] = comments
+        yield item
+
+
+
+
+# 凤凰网  successful
+class IfengNewsSpider(CrawlSpider):
+    name = "ifeng_news_spider"
+    allowed_domains = ['news.ifeng.com']
+    start_urls = ['http://news.ifeng.com']
+
+    # http: // book.ifeng.com / a / 20171115 / 108116_0.shtml
+    #http: // fo.ifeng.com / a / 20171116 / 44763303_0.shtml
+    url_pattern = r'(http://(?:\w+\.)*news\.ifeng\.com)/a/(\d{8})/(\d+)\_0\.shtml'
     rules = [
         Rule(LxmlLinkExtractor(allow=[url_pattern]), callback='parse_news', follow=True)
     ]
 
     def parse_news(self, response):
         sel = Selector(response)
-        title = sel.xpath('//div[@class="h-title"]/text()').extract()
-
         pattern = re.match(self.url_pattern, str(response.url))
-        source = 'xinhuanet.com'
+        date = pattern.group(2)[0:4] + '/' + pattern.group(2)[4:6] + '/' + pattern.group(2)[6:]
+        if sel.xpath('//p[@class="p_time"]/span/text()'):
+            time = sel.xpath('//p[@class="p_time"]/span/text()').extract()
+        elif sel.xpath('//div[@class="yc_tit"]/p/span/text()'):
+            time = sel.xpath('//div[@class="yc_tit"]/p/span/text()').extract()[0]
+        elif sel.xpath('//div[@class="zuo_word fl"]/p/text()'):
+            time = sel.xpath('//div[@class="zuo_word fl"]/p/text()').extract()[-1]
+        else:
+            time = "unknown"
 
-        date = sel.xpath('//div[@class="h-info"]/span/text()').extract()
-
-        time = sel.xpath('//div[@class="h-info"]/span/text()').extract()
+        if sel.xpath('//h1[@id="artical_topic"]/text()'):
+            title = sel.xpath('//h1[@id="artical_topic"]/text()').extract()
+        elif sel.xpath('//div[@class="yc_tit"]/h1/text()'):
+            title = sel.xpath('//div[@class="yc_tit"]/h1/text()').extract()
+        elif sel.xpath('//div[@class="zhs_mid_02"]/h1/text()'):
+            title = sel.xpath('//div[@class="zhs_mid_02"]/h1/text()').extract()
+        else:
+            title = "unknown"
+        source = pattern.group(1)
+        newsId = pattern.group(3)
         url = response.url
+        if sel.xpath('//div[@id="main_content"]/p/text()'):
+            contents = ListCombiner(sel.xpath('//div[@id="main_content"]/p/text()').extract())
+        elif sel.xpath('//div[@class="yc_con_txt"]/p/text()'):
+            contents = ListCombiner(sel.xpath('//div[@class="yc_con_txt"]/p/text()').extract())
+        elif sel.xpath('//div[@class="yaow"]/p/text()'):
+            contents = ListCombiner(sel.xpath('//div[@class="yaow"]/p/text()').extract())
+        else:
+            contents = "unknown"
+        comments = 0
 
-        newsId = re.findall(r'c_(.*?).htm',url, re.S)[0]
+        item = NewsItem()
+        item['source'] = source
+        item['title'] = title
+        item['date'] = date
+        item['time'] = time
+        item['newsId'] = newsId
+        item['url'] = url
+        item['contents'] = contents
+        item['comments'] = comments
+        yield item
+
+# 新华网  successful
+class XinhuaNewSpider(CrawlSpider):
+    name = "xinhua_news_spider"
+    start_urls = ['http://www.xinhuanet.com']
+    allowed_domains = ['xinhuanet.com']
+    #http: // news.xinhuanet.com / world / 2017 - 11 / 15 / c_1121956528.htm
+    url_pattern = r'(http://news.xinhuanet.com)/([a-z]+)/\d{4}-(\d{1,2})/\d{1,2}/c\_(\d+)\.htm'
+    rules = [
+        Rule(LxmlLinkExtractor(allow=[url_pattern]), callback='parse_news', follow=True)
+    ]
+
+    def parse_news(self,response):
+        sel = Selector(response)
+        # pattern = re.match(self.url_pattern, str(response.url))
+        source = 'xinhuanet.com'
+        if sel.xpath('//div[@class="h-info"]/span/text()'):
+            time = sel.xpath('//div[@class="h-info"]/span/text()').extract_first().split()[0] + ' ' + sel.xpath('//div[@class="h-info"]/span/text()').extract_first().split()[1]
+        else:
+            time = 'unknown'
+        # date = '20' + pattern.group(3)[0:4] + '/' + pattern.group(3)[5:]  + pattern.group(4)
+        date = time.split()[0]
+        title = sel.xpath('//div[@class="h-title"]/text()').extract()[0].split()
+        url = response.url
+        newsId = re.findall(r'c_(.*?).htm', url, re.S)[0]
         contents = ListCombiner(sel.xpath('//div[@id="p-detail"]/p/text()').extract())
-        # comments= sel.xpath('//div[@class="right"]/span'
-
         comments = 0
         item = NewsItem()
         item['source'] = source
         item['time'] = time
         item['date'] = date
-        item['contents'] = contents
         item['title'] = title
-        item['url'] = url
+        item['contents'] = contents
         item['newsId'] = newsId
+        item['url'] = url
         item['comments'] = comments
         yield item
 
-
-
-class NewsSpider(CrawlSpider):
-    name = "people_news_spider"
 
