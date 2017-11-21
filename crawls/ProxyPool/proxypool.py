@@ -30,45 +30,68 @@ CRAWLERS = [SpiderMimvp, SpiderCoderBusy, SpiderIP66, SpiderIP89,
             SpiderXicidaili]
 
 class IsEnable(threading.Thread):
-    def __init__(self, ip, debug=False, logger=None):
+    def __init__(self, queue,result, debug=False):
         super(IsEnable, self).__init__()
-        self.ip = ip
         self.debug = debug
-        self.proxies = {
-            'http': 'http://%s' % ip
-        }
+        self.tag = False
+        self.q = queue
+        self.results = result
+        # if debug:
+        #     self.proxies = {
+        #         'http': '%s'%ip
+        #     }
+        # else:
+        #     self.proxies = {
+        #         'http': 'http://%s' % ip
+        #     }
 
     def run(self):
-        try:
-            html = requests.get('http://httpbin.org/ip',
-                                proxies=self.proxies, timeout=5).text
-            result = eval(html)['origin']
-            if len(result.split(',')) == 2:
+        while not self.q.empty():
+            self.work = self.q.get()
+            self.ip = self.work[1]
+            if self.debug:
+                self.proxies = {'http': '%s'%self.ip}
+            else:
+                self.proxies = {'http': 'http://%s' % self.ip}
+            try:
+                html = requests.get('http://httpbin.org/ip',
+                                    proxies=self.proxies, timeout=5).text
+                result = eval(html)['origin']
+                # if len(result.split(',')) == 2:
+                #     return
+                if result in self.ip:
+                    self.results[self.work[0]] = self.ip
+                    # with lock:
+                    #     self.insert_into_sql()
+            except:
                 return
-            if result in self.ip:
-                with lock:
-                    self.insert_into_sql()
-        except:
-            return
+            self.q.task_done()
+
+    def get_result(self):
+        if self.tag:
+            return self.tag
+        else:
+            return False
 
     def insert_into_sql(self):
         global cursor
         global conn
         global CRAWL_IP_COUNT
-        # if self.debug:
-        #     print('[IsEnable][Debug][valid ip:%s]', self.ip)
-        # else:
-        try:
-            date = time.strftime('%Y-%m-%d %X', time.localtime())
-            print("insert into proxypool(ip,port,time) values" + str(
-                (self.ip.split(':')[0], self.ip.split(':')[1], date)))
-            cursor.execute("insert into proxypool(ip,port,time) values " + str(
-                (self.ip.split(':')[0], self.ip.split(':')[1], date)))
-            print('execute')
-            conn.commit()
-            CRAWL_IP_COUNT += 1
-        except:
-            pass
+        if self.debug:
+            print('[IsEnable][Debug][valid ip:%s]', self.ip)
+            self.tag = self.ip
+        else:
+            try:
+                date = time.strftime('%Y-%m-%d %X', time.localtime())
+                print("insert into proxypool(ip,port,time) values" + str(
+                    (self.ip.split(':')[0], self.ip.split(':')[1], date)))
+                cursor.execute("insert into proxypool(ip,port,time) values " + str(
+                    (self.ip.split(':')[0], self.ip.split(':')[1], date)))
+                print('execute')
+                conn.commit()
+                CRAWL_IP_COUNT += 1
+            except:
+                pass
 
 
 def get_current_time():
