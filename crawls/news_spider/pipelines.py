@@ -8,14 +8,20 @@
 import codecs
 import json
 import os
+import pkg_resources
 
 
 class NewsSpiderPipeline(object):
     def __init__(self):
-        self.current_dir = os.getcwd()
+        # self.current_dir = os.getcwd()
+        # self.current_dir = pkg_resources.resource_filename('Data', '')
+        self.current_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
     def process_item(self, item, spider):
-        dir_path = self.current_dir + '/docs' + item['source'] + '/' + item['date']
+        dir_path = self.current_dir + '/Data/' + item['source'] + '/' + item['date']
+        print(dir_path)
+        # dir_path = self.current_dir + '/docs' + item['source'] + '/' + item['date']
+        print('%%%%%', dir_path)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         news_file_path = dir_path + '/' + item['newsId'] + '.json'

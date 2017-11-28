@@ -36,14 +36,6 @@ class IsEnable(threading.Thread):
         self.tag = False
         self.q = queue
         self.results = result
-        # if debug:
-        #     self.proxies = {
-        #         'http': '%s'%ip
-        #     }
-        # else:
-        #     self.proxies = {
-        #         'http': 'http://%s' % ip
-        #     }
 
     def run(self):
         while not self.q.empty():
@@ -57,8 +49,7 @@ class IsEnable(threading.Thread):
                 html = requests.get('http://httpbin.org/ip',
                                     proxies=self.proxies, timeout=5).text
                 result = eval(html)['origin']
-                # if len(result.split(',')) == 2:
-                #     return
+
                 if result in self.ip:
                     self.results[self.work[0]] = self.ip
                     # with lock:
@@ -66,12 +57,6 @@ class IsEnable(threading.Thread):
             except:
                 return
             self.q.task_done()
-
-    def get_result(self):
-        if self.tag:
-            return self.tag
-        else:
-            return False
 
     def insert_into_sql(self):
         global cursor
@@ -159,5 +144,4 @@ if __name__ == '__main__':
     # update_proxy.delay()
     update_proxy()
 
-        # TOdo 明天要做的事，调用celery接口，随时更新代理ＩＰ，继续调试．
 

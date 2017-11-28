@@ -37,17 +37,17 @@ class HttpProxyMiddleware(object):
         # 当有效代理小于这个数时(包括直连), 从网上抓取新的代理, 可以将这个数设为为了满足每个ip被要求输入验证码后得到足够休息时间所需要的代理数
         # 例如爬虫在十个可用代理之间切换时, 每个ip经过数分钟才再一次轮到自己, 这样就能get一些请求而不用输入验证码.
         # 如果这个数过小, 例如两个, 爬虫用A ip爬了没几个就被ban, 换了一个又爬了没几次就被ban, 这样整个爬虫就会处于一种忙等待的状态, 影响效率
-        self.extend_proxy_threshold = 10
+        self.extend_proxy_threshold = 6
         # 初始化代理列表
         self.proxyes = [{"proxy": None, "valid": True, "count": 0}]
         # 初始时使用0号代理(即无代理)
-        self.proxy_index = 0
+        self.proxy_index = 1
         # 表示可信代理的数量(如自己搭建的HTTP代理)+1(不用代理直接连接)
         self.fixed_proxy = len(self.proxyes)
         # 上一次抓新代理的时间
         self.last_fetch_proxy_time = datetime.now()
         # 每隔固定时间强制抓取新代理(min)
-        self.fetch_proxy_interval = 120
+        self.fetch_proxy_interval = 2
         # 一个将被设为invalid的代理如果已经成功爬取大于这个参数的页面， 将不会被invalid
         self.invalid_proxy_threshold = 200
         # 使用http代理还是https代理
@@ -120,7 +120,6 @@ class HttpProxyMiddleware(object):
         从网上抓取新的代理添加到代理列表中
         """
         logger.info("extending proxyes using fetch_free_proxyes.py")
-        # Todo 此处调用Celery,给抓取程序发信号
         new_proxyes = fetch_free_proxyes.fetch_all(https=self.use_https)
         logger.info("new proxyes: %s" % new_proxyes)
         self.last_fetch_proxy_time = datetime.now()
@@ -173,7 +172,8 @@ class HttpProxyMiddleware(object):
             self.reset_proxyes()
 
         # 代理数量仍然不足, 抓取新的代理
-        if self.len_valid_proxy() < self.extend_proxy_threshold:
+        if self.len_valid_proxy() < self.extend_proxy_threshold and \
+                datetime.now() > self.last_fetch_proxy_time + timedelta(minutes=self.fetch_proxy_interval):
             logger.info("valid proxy < threshold: %d/%d" % (self.len_valid_proxy(), self.extend_proxy_threshold))
             self.fetch_new_proxyes()
 

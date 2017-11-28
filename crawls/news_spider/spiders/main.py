@@ -7,4 +7,4 @@ from scrapy import cmdline
 # cmdline.execute("scrapy crawl ifeng_news_spider -o ifeng.csv".split())
 # cmdline.execute("scrapy crawl jndsb_news_spider -o jndsb.csv".split())
 # cmdline.execute("scrapy crawl jxcbw_news_spider -o jxcbw.csv".split())
-cmdline.execute("scrapy crawl cctv_news_spider -o cctv.csv".split())
+# cmdline.execute("scrapy crawl cctv_news_spider -o cctv.csv".split())

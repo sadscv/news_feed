@@ -11,7 +11,7 @@ from scrapy.utils.project import get_project_settings
 
 logger = logging.getLogger("test spider")
 
-celery_app = Celery('crawls.news_spider.spiders.test')
+celery_app = Celery('crawls.news_spider.spiders.testspider')
 celery_app.config_from_object('CONFIG.celeryconfig')
 celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
@@ -37,7 +37,7 @@ class TestSpider(scrapy.Spider):
         COUNT += 1
         if response.body:
             req = response.request
-            req.meta["change_proxy"] = True
+            # req.meta["change_proxy"] = True
             yield req
         else:
             print('crawl failed')

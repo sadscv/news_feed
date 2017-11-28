@@ -225,15 +225,8 @@ def fetch_all(endpage=2, https=False):
     proxyes += fetch_66ip(https)
     valid_proxyes = []
     logger.info("checking proxyes validation")
-    count = 0
-    # for p in proxyes:
-    # for p in tqdm(proxyes):
-    #     print(count)
-    #     count += 1
-    #     if check(p):
-    #         valid_proxyes.append(p)
 
-    # test for celery
+    # https://www.shanelynn.ie/using-python-threading-for-multiple-results-queue/
     q = queue.Queue(maxsize=0)
     num_threads = min(50, len(proxyes))
     results = [{} for i in proxyes]
@@ -251,7 +244,12 @@ def fetch_all(endpage=2, https=False):
     for i in range(len(proxyes)):
         q.put((i, proxyes[i]))
 
-    valid_proxyes = results
+    for r in results:
+        if not isinstance(r, dict):
+            valid_proxyes.append(r)
+    for v in valid_proxyes:
+        print(v)
+
     return valid_proxyes
 
 if __name__ == '__main__':

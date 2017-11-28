@@ -66,7 +66,6 @@ class NeteaseNewsSpider(CrawlSpider):
         title = sel.xpath("//h1/text()").extract()[0]
         contents = ListCombiner(sel.xpath('//p/text()').extract()[2:-3])
         comment_url = 'http://comment.news.163.com/api/v1/products/a2869674571f77b5a0867c3d71db5856/threads/{}'.format(newsId)
-
         # yield is a keyword that is used like return, except the function will return a generator.
         yield Request(comment_url, self.parse_comment, meta={'source':source,
                                                              'date':date,
@@ -123,7 +122,7 @@ class SinaNewsSpider(CrawlSpider):
             comment_id = comment_elements.split(';')[1].split(':')[1]
             comment_url = 'http://comment5.news.sina.com.cn/page/info?version=1&format=js&channel={}&newsid={}'.format(comment_channel,comment_id)
 
-            yield Request(comment_url, self.parse_comment, meta={'source':source,
+            yield Request(comment_url, self.parse_comment, meta={'source':self.name,
                                                                  'date':date,
                                                                  'newsId':newsId,
                                                                  'url':url,
@@ -152,6 +151,7 @@ class SinaNewsSpider(CrawlSpider):
 class TencentNewsSpider(CrawlSpider):
     name = 'tencent_news_spider'
     # allowed_domains = ['news.qq.com']
+    website_possible_httpstatus_list = [502, 404, 403, 301, 302]
     start_urls = ['http://news.qq.com']
     # http://news.qq.com/a/20170825/026956.htm
     url_pattern = r'(.*)/a/(\d{8})/(\d+)\.htm'
@@ -183,10 +183,13 @@ class TencentNewsSpider(CrawlSpider):
 
         if response.xpath('//*[@id="Main-Article-QQ"]/div/div[1]/div[2]/script[2]/text()'):
             cmt = response.xpath('//*[@id="Main-Article-QQ"]/div/div[1]/div[2]/script[2]/text()').extract()[0]
+            #Todo(sadscv) 所有的data只有tencentnews 无法保存．问下zjms这一块的逻辑．为何要if *** else:return item.
+
             if re.findall(r'cmt_id = (\d*);', cmt):
                 cmt_id = re.findall(r'cmt_id = (\d*);', cmt)[0]
                 comment_url = 'http://coral.qq.com/article/{}/comment?commentid=0&reqnum=1&tag=&callback=mainComment&_=1389623278900'.format(cmt_id)
-                yield Request(comment_url, self.parse_comment, meta={'source': source,
+
+                yield Request(comment_url, self.parse_comment, meta={'source': self.name,
                                                                      'date': date,
                                                                      'newsId': newsId,
                                                                      'url': url,
@@ -224,6 +227,7 @@ class TencentNewsSpider(CrawlSpider):
 
 #wirted by myself 搜狐ｏｋ
 class SohuNewsSpider(CrawlSpider):
+    website_possible_httpstatus_list = [404, 302]
     name = "sohu_news_spider"
     start_urls = ['http://news.sohu.com/',
                   'http://travel.sohu.com/',
@@ -258,7 +262,7 @@ class SohuNewsSpider(CrawlSpider):
 
         comments = 0
         item = NewsItem()
-        item['source'] = source
+        item['source'] = self.name
         item['time'] = time
         item['date'] = date
         item['contents'] = contents
@@ -297,7 +301,7 @@ class JxcbwNewsSpider(CrawlSpider):
         contents = 0
 
         item = NewsItem()
-        item['source'] = source
+        item['source'] = self.name
         item['title'] = title
         item['date'] = date
         item['time'] = time
@@ -311,7 +315,8 @@ class JxcbwNewsSpider(CrawlSpider):
 class ZgqxbNewsSpider(CrawlSpider):
     name = "zgqxb_news_spider"
     allowed_domains = ['zgqxb.com.cn']
-    start_urls = ['http://www.zgqxb.cn']
+    website_possible_httpstatus_list = [404, 403, 301, 302]
+    start_urls = ['http://www.zgqxb.com.cn']
     # http: // www.zgqxb.com.cn / pressman / bjdp / 201711 / t20171102_66412.htm
     # http: // www.zgqxb.com.cn / kjzg / kejidt / 201711 / t20171121_66600.htm
     url_pattern = r'(http://www\.zgqxb\.com\.cn)/.*/\d{6}/t(\d+)_(\d+).htm'
@@ -350,7 +355,7 @@ class ZgqxbNewsSpider(CrawlSpider):
 
 
         item = NewsItem()
-        item['source'] = source
+        item['source'] = self.name
         item['title'] = title
         item['date'] = date
         item['time'] = time
@@ -396,7 +401,7 @@ class XinminNewsSpider(CrawlSpider):
         comments = 0
 
         item = NewsItem()
-        item['source'] = source
+        item['source'] = self.name
         item['title'] = title
         item['date'] = date
         item['time'] = time
@@ -441,7 +446,7 @@ class CctvNewsSpider(CrawlSpider):
         comments = 0
 
         item = NewsItem()
-        item['source'] = source
+        item['source'] = self.name
         item['title'] = title
         item['date'] = date
         item['time'] = time
@@ -481,7 +486,7 @@ class JndsbNewsSpider(CrawlSpider):
         comments = 0
 
         item = NewsItem()
-        item['source'] = source
+        item['source'] = self.name
         item['title'] = title
         item['date'] = date
         item['time'] = time
@@ -542,7 +547,7 @@ class IfengNewsSpider(CrawlSpider):
         comments = 0
 
         item = NewsItem()
-        item['source'] = source
+        item['source'] = self.name
         item['title'] = title
         item['date'] = date
         item['time'] = time
@@ -579,7 +584,7 @@ class XinhuaNewSpider(CrawlSpider):
         contents = ListCombiner(sel.xpath('//div[@id="p-detail"]/p/text()').extract())
         comments = 0
         item = NewsItem()
-        item['source'] = source
+        item['source'] = self.name
         item['time'] = time
         item['date'] = date
         item['title'] = title
