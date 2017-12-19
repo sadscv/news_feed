@@ -18,7 +18,9 @@ headers = {
 
 
 def crawl():
-    urls = ['http://www.xicidaili.com/nn/', 'http://www.xicidaili.com/nn/2', 'http://www.xicidaili.com/wn/']
+    urls = ['http://www.xicidaili.com/nn/',
+            # 'http://www.xicidaili.com/nn/2',
+            'http://www.xicidaili.com/wn/']
     result = []
     for url in urls:
         try:

@@ -4,6 +4,7 @@ import multiprocessing
 import os
 import queue
 
+import requests
 from bs4 import BeautifulSoup
 import urllib.request, urllib.error, urllib.parse
 import logging
@@ -16,12 +17,17 @@ logger = logging.getLogger(__name__)
 
 def get_html(url):
     request = urllib.request.Request(url)
-    request.add_header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.99 Safari/537.36")
+    request.add_header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36")
     html = urllib.request.urlopen(request)
     return html.read()
 
+def get_html_request(url):
+    conn = requests.session()
+    resp = conn.get(url)
+    return resp
+
 def get_soup(url):
-    soup = BeautifulSoup(get_html(url), "lxml")
+    soup = BeautifulSoup(get_html_request(url), "lxml")
     return soup
 
 def fetch_kxdaili(page, https):
@@ -216,9 +222,9 @@ def check(proxy):
 
 def fetch_all(endpage=2, https=False):
     proxyes = []
-    for i in range(1, endpage):
-        proxyes += fetch_kxdaili(i, https=https)
-    proxyes += fetch_mimvp(https)
+    # for i in range(1, endpage):
+    #     proxyes += fetch_kxdaili(i, https=https)
+    # proxyes += fetch_mimvp(https)
     proxyes += fetch_xici(https)
     proxyes += fetch_ip181(https)
     proxyes += fetch_httpdaili(https)
@@ -232,7 +238,6 @@ def fetch_all(endpage=2, https=False):
     results = [{} for i in proxyes]
     for i in range(len(results)):
         q.put((i, proxyes[i]))
-
     threads = []
     for p in proxyes:
         work = IsEnable(result=results, debug=True, queue=q)
@@ -241,6 +246,7 @@ def fetch_all(endpage=2, https=False):
         work.start()
     for t in threads:
         t.join()
+    # 下面两行不要试试，与10行前的地方重复了 。
     for i in range(len(proxyes)):
         q.put((i, proxyes[i]))
 
@@ -261,7 +267,8 @@ if __name__ == '__main__':
     root_logger.addHandler(stream_handler)
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
-    proxyes = fetch_66ip(https=True)
+    # proxyes = fetch_66ip(https=True)
+    proxyes = fetch_all(https=True)
     #print check("202.29.238.242:3128")
     for p in proxyes:
         print(p)

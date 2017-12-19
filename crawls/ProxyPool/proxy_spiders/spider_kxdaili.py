@@ -22,7 +22,7 @@ def crawl():
     result = []
     for url in urls:
         page = 1
-        while page <= 10:
+        while page <= 2:
             try:
                 html = requests.get(url % (page), headers=headers, timeout=30).text.encode('ISO-8859-1').decode('utf-8',
                                                                                                                 'ignore')

@@ -13,7 +13,7 @@ from twisted.web._newclient import ResponseNeverReceived
 from twisted.internet.error import TimeoutError, ConnectionRefusedError, ConnectError
 
 from CONFIG.config import DB, USE_FETCH_FREE_PROXYES
-from crawls.ProxyPool.proxypool import IsEnable
+from crawls.ProxyPool.proxypool import IsEnable, update_proxy
 from crawls.news_spider import fetch_free_proxyes
 
 logger = logging.getLogger(__name__)
@@ -29,9 +29,9 @@ class HttpProxyMiddleware(object):
         # 一定分钟数后切换回不用代理, 因为用代理影响到速度
         self.recover_interval = 20
         # 一个proxy如果没用到这个数字就被发现老是超时, 则永久移除该proxy. 设为0则不会修改代理文件.
-        self.dump_count_threshold = 20
+        self.dump_count_threshold = 10
         # 存放代理列表的文件, 每行一个代理, 格式为proto://ip:port, 这个文件会被修改, 注意备份
-        self.proxy_file = "proxyes.dat"
+        self.proxy_file = os.path.dirname(__file__) + "/run_scripts/proxyes.dat"
         # 是否在超时的情况下禁用代理
         self.invalid_proxy_flag = True
         # 当有效代理小于这个数时(包括直连), 从网上抓取新的代理, 可以将这个数设为为了满足每个ip被要求输入验证码后得到足够休息时间所需要的代理数
@@ -47,11 +47,13 @@ class HttpProxyMiddleware(object):
         # 上一次抓新代理的时间
         self.last_fetch_proxy_time = datetime.now()
         # 每隔固定时间强制抓取新代理(min)
-        self.fetch_proxy_interval = 2
+        self.fetch_proxy_interval = 1
         # 一个将被设为invalid的代理如果已经成功爬取大于这个参数的页面， 将不会被invalid
         self.invalid_proxy_threshold = 200
         # 使用http代理还是https代理
         self.use_https = use_https
+        # 爬取网站可接受的错误代码
+        self.website_possible_httpstatus_list = [404, 403]
 
         # 从文件读取初始代理
         #Todo 处理与数据库的衔接
@@ -108,8 +110,8 @@ class HttpProxyMiddleware(object):
     def reset_proxyes(self):
         print('reset_proxyes')
         """
-        将所有count>=指定阈值的代理重置为valid,
-        """
+        将所有count>=指定阈值的代理重置为valid
+       """
         logger.info("reset proxyes to valid")
         for p in self.proxyes:
             if p["count"] >= self.dump_count_threshold:
@@ -120,7 +122,8 @@ class HttpProxyMiddleware(object):
         从网上抓取新的代理添加到代理列表中
         """
         logger.info("extending proxyes using fetch_free_proxyes.py")
-        new_proxyes = fetch_free_proxyes.fetch_all(https=self.use_https)
+        # new_proxyes = fetch_free_proxyes.fetch_all(https=self.use_https)
+        new_proxyes = update_proxy()
         logger.info("new proxyes: %s" % new_proxyes)
         self.last_fetch_proxy_time = datetime.now()
 
@@ -268,7 +271,8 @@ class HttpProxyMiddleware(object):
             request.meta["change_proxy"] = False
         if "proxy_index" not in request.meta.keys():
             request.meta["proxy_index"] = 0
-        self.set_proxy(request)
+            #TOdo 2017/12/17 改到这儿
+            self.set_proxy(request)
 
     def process_response(self, request, response, spider):
         """
@@ -281,6 +285,8 @@ class HttpProxyMiddleware(object):
 
         # status不是正常的200而且不在spider声明的正常爬取过程中可能出现的
         # status列表中, 则认为代理无效, 切换代理
+        if not hasattr(spider, "website_possible_httpstatus_list"):
+            spider.website_possible_httpstatus_list = self.website_possible_httpstatus_list
         if response.status != 200 \
                 and (not hasattr(spider, "website_possible_httpstatus_list") \
                              or response.status not in spider.website_possible_httpstatus_list):

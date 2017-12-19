@@ -12,8 +12,9 @@ BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 
 # List of modules to import when celery starts.
-CELERY_IMPORTS=('crawls.news_spider.spiders.testspider', 'info_engine', 'crawls.ProxyPool.proxypool',
-                'crawls.news_spider.spiders.tasks')
+# CELERY_IMPORTS=('crawls.news_spider.spiders.testspider', 'info_engine', 'crawls.ProxyPool.proxypool',
+#                 'crawls.news_spider.run_scripts.tasks')
+CELERY_IMPORTS=('crawls.news_spider.run_scripts.tasks')
 
 CELERYD_MAX_TASKS_PER_CHILD = 1
 

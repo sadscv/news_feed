@@ -1,4 +1,4 @@
-# -*- coding: gbk -*-
+# -*- coding: utf8 -*-
 
 # Define your item pipelines here
 #
@@ -32,8 +32,9 @@ class NewsSpiderPipeline(object):
             return item
 
 
-        news_file = codecs.open(news_file_path, 'w', 'gbk')
-        line = json.dumps(dict(item))
+        news_file = codecs.open(news_file_path, 'w', 'utf8')
+        line = json.dumps(dict(item), ensure_ascii=False)
         news_file.write(line)
         news_file.close()
         return item
+

@@ -19,7 +19,7 @@ def get_current_time():
 
 def crawl():
     result = []
-    for page in range(5):
+    for page in range(2):
         url = 'https://proxy.coderbusy.com/zh-cn/classical/anonymous-type/highanonymous/p%s.aspx' % (page + 1)
         try:
             html = requests.get(url, headers=headers, timeout=5).text
